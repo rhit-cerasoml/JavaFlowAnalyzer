@@ -1,17 +1,17 @@
 package com.jflow.agent;
 
 import javassist.*;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.MethodInfo;
 
-import java.lang.annotation.Annotation;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import java.util.stream.StreamSupport;
 
 public class ClassMethodLoggerInjector implements ClassFileTransformer {
 
-    private final ClassPool classPool = ClassPool.getDefault();
+    private static final ClassPool classPool = ClassPool.getDefault();
 
     @Override
     public byte[] transform(final ClassLoader loader,
@@ -20,21 +20,38 @@ public class ClassMethodLoggerInjector implements ClassFileTransformer {
                             final ProtectionDomain protectionDomain,
                             final byte[] classfileBuffer)
             throws IllegalClassFormatException {
+        StringBuilder log = new StringBuilder("");
+
 
         // className can be null, ignoring such classes.
-        if (className == null) {
+        if (className == null || className.startsWith("java") || className.startsWith("sun") || className.startsWith("com/flow/agent") || className.startsWith("jdk")) {
             return null;
         }
-
+        System.out.println(className);
         // Javassist uses "." as a separator in class/package names.
         final String classNameDots = className.replaceAll("/", ".");
-        final CtClass ctClass = classPool.getOrNull(classNameDots);
+        CtClass ctClass;
+        try {
+            if((ctClass = classPool.getOrNull(classNameDots)) == null) {
+                ctClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return classfileBuffer;
+        }
 
-        System.out.println("visiting " + className);
+        System.out.println(ctClass.getName());
+        if(ctClass.getName().equals("JFlowLogger")){
+            return classfileBuffer;
+        }
+
+        //log.append("visiting " + className + "\n");
 
         // Won't find some classes from java.lang.invoke,
         // but we're not interested in them anyway.
         if (ctClass == null) {
+            log.append("dumped " + className + "; class is null" + "\n");
+            System.out.println(log.toString());
             System.out.flush();
             return classfileBuffer;
         }
@@ -42,33 +59,52 @@ public class ClassMethodLoggerInjector implements ClassFileTransformer {
         // A frozen CtClass is a CtClass
         // that was already converted to Java class.
         if (ctClass.isFrozen()) {
-            System.out.println("dumped " + className + "; frozen");
+            log.append("dumped " + className + "; frozen\n");
             // No longer need to keep the CtClass object in memory.
             ctClass.detach();
+            System.out.println(log.toString());
             System.out.flush();
             return classfileBuffer;
         }
 
         try {
-            boolean anyMethodInstrumented = false;
-
             // Behaviors == methods and constructors.
-            for (final CtBehavior behavior : ctClass.getDeclaredBehaviors()) {
-                System.out.println("\t" + behavior.getName());
+            for (CtBehavior behavior : ctClass.getDeclaredBehaviors()) {
+                if(behavior.isEmpty()){
+                    log.append("\tmethod " + behavior.getName() + " is empty\n");
+                    continue;
+                }
+                //log.append("\t" + behavior.getName() + "\n");
+                try {
+
+                    addMethodLogger(behavior, ctClass);
+
+                }catch (Exception e){
+                    log.append("\tunable to modify " + behavior + "\n");
+                    log.append("\t" + e + "\n");
+                }
             }
 
-            if (anyMethodInstrumented) {
-                System.out.flush();
-                return ctClass.toBytecode();
-            }
+            System.out.println(log.toString());
+            System.out.flush();
+            return ctClass.toBytecode();
+
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            log.append(e.toString());
         } finally {
             // No longer need to keep the CtClass object in memory.
             ctClass.detach();
         }
 
+        System.out.println(log.toString());
         System.out.flush();
         return classfileBuffer;
+    }
+
+
+    private static void addMethodLogger(CtBehavior behavior, CtClass ctClass) throws CannotCompileException {
+        StringBuilder logger = new StringBuilder();
+        logger.append("com.jflow.agent.JFlowLogger.log(\"calling " + behavior.getName() + " in " + ctClass.getName() + "\");");
+        behavior.insertBefore(logger.toString());
     }
 }

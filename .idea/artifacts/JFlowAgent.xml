@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="JFlowAgent">
+    <output-path>$PROJECT_DIR$/out/artifacts/JFlowAgent</output-path>
+    <root id="archive" name="JFlowAgent.jar">
+      <element id="module-output" name="JavaFlowAnalyzer" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/src/com/jflow/agent/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>

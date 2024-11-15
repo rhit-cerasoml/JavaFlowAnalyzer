@@ -7,10 +7,12 @@ public class DemoMain {
         System.out.flush();
         Agent a;
         DemoMain main = new DemoMain();
-        main.UHOHFUNCTION();
+        main.UHOHFUNCTION(false);
+        main.UHOHFUNCTION(true);
     }
 
-    public void UHOHFUNCTION(){
+    public void UHOHFUNCTION(boolean test){
+        if(test) return;
         System.out.println("visited UHOHFUNC");
     }
 

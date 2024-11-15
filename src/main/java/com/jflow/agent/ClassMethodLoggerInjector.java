@@ -102,9 +102,11 @@ public class ClassMethodLoggerInjector implements ClassFileTransformer {
     }
 
 
-    private static void addMethodLogger(CtBehavior behavior, CtClass ctClass) throws CannotCompileException {
-        StringBuilder logger = new StringBuilder();
-        logger.append("com.jflow.agent.JFlowLogger.log(\"calling " + behavior.getName() + " in " + ctClass.getName() + "\");");
-        behavior.insertBefore(logger.toString());
+    private static void addMethodLogger(CtBehavior behavior, CtClass ctClass) throws CannotCompileException, NotFoundException {
+        behavior.insertBefore("com.jflow.agent.JFlowLogger.log(\"calling " + behavior.getName() + " in " + ctClass.getName() + "\");");
+        for(CtClass type : behavior.getParameterTypes()){
+            System.out.println(type);
+        }
+        behavior.insertAfter("com.jflow.agent.JFlowLogger.log(\"return from " + behavior.getName() + " in " + ctClass.getName() + "\");");
     }
 }

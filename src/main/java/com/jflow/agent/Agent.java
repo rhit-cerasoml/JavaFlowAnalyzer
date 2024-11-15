@@ -5,7 +5,6 @@ import javassist.*;
 import java.lang.instrument.Instrumentation;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 public class Agent {
     public static void premain(String agentArgs, Instrumentation inst){
@@ -36,7 +35,7 @@ public class Agent {
         CtMethod initMethod = CtNewMethod.make(
                 "public static void initLogger(String path) { " +
                             "try { " +
-                            "    logFileWriter = new java.io.PrintWriter(new java.io.FileWriter(path, true)); " +
+                            "    logFileWriter = new java.io.PrintWriter(new java.io.FileWriter(path, false)); " +
                             "} catch (java.io.IOException e) { " +
                             "    e.printStackTrace(); " +
                             "}" +

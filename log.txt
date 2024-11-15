@@ -1,7 +1,15 @@
 calling premain in com.intellij.rt.execution.application.AppMainV2
 calling loadHelper in com.intellij.rt.execution.application.AppMainV2
+return from loadHelper in com.intellij.rt.execution.application.AppMainV2
 calling startMonitor in com.intellij.rt.execution.application.AppMainV2
 calling AppMainV2$1 in com.intellij.rt.execution.application.AppMainV2$1
+return from AppMainV2$1 in com.intellij.rt.execution.application.AppMainV2$1
+return from startMonitor in com.intellij.rt.execution.application.AppMainV2
+return from premain in com.intellij.rt.execution.application.AppMainV2
 calling run in com.intellij.rt.execution.application.AppMainV2$1
 calling main in com.jflow.test.DemoMain
 calling UHOHFUNCTION in com.jflow.test.DemoMain
+return from UHOHFUNCTION in com.jflow.test.DemoMain
+calling UHOHFUNCTION in com.jflow.test.DemoMain
+return from UHOHFUNCTION in com.jflow.test.DemoMain
+return from main in com.jflow.test.DemoMain
